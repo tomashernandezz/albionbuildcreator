@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Albion Build Planner</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-9SW5VGB5D7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-9SW5VGB5D7');
+  </script>
+
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7568208853073067" crossorigin="anonymous"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: #0d0a07; height: 100%; }
+
+    .app { font-family: 'Crimson Pro', Georgia, serif; background: #0d0a07; min-height: 100%; color: #c9b99a; padding: 2rem; position: relative; }
+    .app::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, #2a1a0a 0%, #0d0a07 60%); pointer-events: none; }
+    .screen { position: relative; z-index: 1; }
+
+    h1 { font-family: 'Cinzel', serif; font-size: 32px; font-weight: 700; color: #d4aa70; text-align: center; letter-spacing: 4px; margin-bottom: 0.5rem; }
+    .subtitle { text-align: center; font-size: 15px; color: #9a8a75; letter-spacing: 2px; font-style: italic; margin-bottom: 2.5rem; }
+    .divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, #4a3820, #d4aa70, #4a3820, transparent); margin-bottom: 2.5rem; }
+    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 500px; margin: 0 auto; }
+    .mode-card { border: 1px solid #3a2e1e; background: #14100a; padding: 2rem 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+    .mode-card:hover { border-color: #d4aa70; }
+    .mode-icon { font-size: 36px; margin-bottom: 1rem; display: block; }
+    .mode-title { font-family: 'Cinzel', serif; font-size: 15px; color: #d4aa70; letter-spacing: 2px; margin-bottom: 0.5rem; }
+    .mode-desc { font-size: 14px; color: #9a8a75; font-style: italic; line-height: 1.4; }
+    .members-screen { text-align: center; max-width: 400px; margin: 0 auto; }
+    .screen-title { font-family: 'Cinzel', serif; font-size: 20px; color: #d4aa70; letter-spacing: 3px; margin-bottom: 0.5rem; }
+    .screen-sub { font-size: 15px; color: #9a8a75; font-style: italic; margin-bottom: 2rem; }
+    .members-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; margin-bottom: 2rem; }
+    .member-btn { border: 1px solid #3a2e1e; background: #14100a; color: #c9b99a; font-family: 'Cinzel', serif; font-size: 18px; padding: 1rem 0; cursor: pointer; transition: all 0.2s; }
+    .member-btn:hover, .member-btn.active { border-color: #d4aa70; color: #d4aa70; background: #1e1608; }
+    .btn-primary { font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 2px; color: #0d0a07; background: #d4aa70; border: none; padding: 0.75rem 2.5rem; cursor: pointer; transition: all 0.2s; }
+    .btn-primary:hover { background: #e8c48a; }
+    .btn-back { font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 2px; color: #9a8a75; background: transparent; border: 1px solid #3a2e1e; padding: 0.5rem 1.5rem; cursor: pointer; margin-bottom: 0; transition: all 0.2s; }
+    .btn-back:hover { color: #c9b99a; border-color: #5a4a35; }
+
+    .toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .btn-tool {
+      font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 1px;
+      color: #7a6a55; background: transparent; border: 1px solid #3a2e1e;
+      padding: 6px 14px; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-tool:hover { color: #d4aa70; border-color: #5a4a35; }
+    .btn-kofi {
+      font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 1px;
+      color: #c9a96e; background: transparent; border: 1px solid #5a3e1e;
+      padding: 6px 14px; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-kofi:hover { color: #f0c97e; border-color: #d4aa70; background: #1e1408; }
+
+    .build-wrapper { overflow-x: auto; }
+    .col-label { font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 1px; color: #9a8a75; text-align: center; padding: 0 0 8px; text-transform: uppercase; }
+    .col-label.swap { color: #3a2e1e; font-style: italic; }
+    .row-label { font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 1px; color: #9a8a75; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; text-transform: uppercase; white-space: nowrap; }
+    .slot { border: 1px solid #2a2015; background: rgba(20,16,10,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; width: 120px; height: 120px; flex-shrink: 0; overflow: hidden; }
+    .slot:hover { border-color: #d4aa70; background: rgba(30,22,8,0.9); }
+    .slot.filled { border-color: #4a3820; }
+    .slot.swap-add { border: 1px dashed #2a2015; background: rgba(15,12,8,0.85); }
+    .slot.swap-add:hover { border-color: #5a4a35; }
+    .slot.swap-locked { border: 1px solid #160f08; background: rgba(10,8,6,0.85); cursor: default; pointer-events: none; }
+    .slot img { width: 80%; height: 80%; object-fit: contain; image-rendering: pixelated; }
+    .slot-name { font-size: 11px; color: #7a6a55; letter-spacing: 1px; text-align: center; padding: 0 4px; font-family: 'Cinzel', serif; position: absolute; bottom: 4px; }
+    .slot.filled .slot-name { display: none; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 200; }
+    .modal { background: #14100a; border: 1px solid #4a3820; width: 90%; max-width: 480px; max-height: 80vh; display: flex; flex-direction: column; overflow: hidden; }
+    .modal-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid #2a2015; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .modal-title { font-family: 'Cinzel', serif; font-size: 15px; color: #d4aa70; letter-spacing: 2px; }
+    .modal-close { background: none; border: none; color: #7a6a55; font-size: 20px; cursor: pointer; line-height: 1; padding: 0; }
+    .modal-close:hover { color: #d4aa70; }
+    .modal-search { padding: 1rem 1.5rem; border-bottom: 1px solid #2a2015; flex-shrink: 0; }
+    .search-input { width: 100%; background: #0d0a07; border: 1px solid #3a2e1e; color: #c9b99a; font-family: 'Crimson Pro', Georgia, serif; font-size: 15px; padding: 0.6rem 1rem; outline: none; }
+    .search-input:focus { border-color: #d4aa70; }
+    .search-input::placeholder { color: #4a3820; }
+    .categories-bar { display: flex; gap: 6px; padding: 0.75rem 1.5rem; border-bottom: 1px solid #2a2015; flex-wrap: wrap; flex-shrink: 0; }
+    .cat-pill { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 1px; padding: 4px 10px; border: 1px solid #3a2e1e; background: transparent; color: #7a6a55; cursor: pointer; transition: all 0.15s; text-transform: uppercase; }
+    .cat-pill:hover, .cat-pill.active { border-color: #d4aa70; color: #d4aa70; background: #1e1608; }
+    .items-list { overflow-y: auto; flex: 1; padding: 0.5rem; }
+    .item-row { display: flex; align-items: center; gap: 12px; padding: 8px 10px; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; }
+    .item-row:hover { background: #1e1608; border-color: #3a2e1e; }
+    .item-thumb { width: 44px; height: 44px; object-fit: contain; image-rendering: pixelated; flex-shrink: 0; }
+    .item-info { flex: 1; min-width: 0; }
+    .item-name { font-size: 15px; color: #ddd0b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-unique { font-size: 12px; color: #8a7a65; font-family: 'Cinzel', serif; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .empty-state { text-align: center; padding: 3rem; color: #4a3820; font-style: italic; }
+
+    #screenshot-flash { position: fixed; inset: 0; background: white; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.1s; }
+  </style>
+</head>
+<body>
+
+<div id="screenshot-flash"></div>
+
+<div class="app" id="app">
+
+  <div class="screen" id="screen-home">
+    <h1>ALBION BUILD PLANNER</h1>
+    <p class="subtitle">forge your destiny</p>
+    <div class="divider"></div>
+    <div class="mode-grid">
+      <div class="mode-card" onclick="goGroup()">
+        <span class="mode-icon">&#9876;&#65039;</span>
+        <div class="mode-title">GROUP BUILD</div>
+        <p class="mode-desc">Plan builds for your entire party</p>
+      </div>
+      <div class="mode-card" onclick="goSolo()">
+        <span class="mode-icon">&#128481;&#65039;</span>
+        <div class="mode-title">SOLO BUILD</div>
+        <p class="mode-desc">Craft your personal loadout</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-members" style="display:none">
+    <button class="btn-back" onclick="goHome()">&#8592; BACK</button>
+    <div class="members-screen" style="margin-top:2rem;">
+      <div class="screen-title">GROUP SIZE</div>
+      <p class="screen-sub">How many members in your party?</p>
+      <div class="members-grid" id="members-grid"></div>
+      <button class="btn-primary" onclick="startGroupBuild()">FORGE BUILD &#8594;</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-build" style="display:none">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+      <div style="display:flex; align-items:center; gap:1rem;">
+        <button class="btn-back" onclick="goBack()">&#8592; BACK</button>
+        <div style="font-family:'Cinzel',serif; font-size:18px; color:#d4aa70; letter-spacing:3px;" id="build-label">BUILD</div>
+        <div style="font-size:13px; color:#7a6a55; font-style:italic;" id="build-sub"></div>
+      </div>
+      <div class="toolbar">
+        <button class="btn-tool" onclick="takeScreenshot()">&#128247; SCREENSHOT</button>
+        <!-- Replace YOUR_KOFI_USERNAME with your actual Ko-fi username -->
+        <a class="btn-kofi" href="https://ko-fi.com/doeTom" target="_blank">
+          ☕ BUY ME A COFFEE
+        </a>
+      </div>
+    </div>
+    <div class="build-wrapper" id="build-capture">
+      <div id="build-container"></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="kofi-modal" style="display:none">
+  <div class="modal-overlay" onclick="closeKofiModal()">
+    <div class="modal" style="max-width:380px; text-align:center;" onclick="event.stopPropagation()">
+      <div class="modal-header" style="justify-content:center; border-bottom:1px solid #2a2015; position:relative;">
+        <div class="modal-title">YOUR BUILD IS READY</div>
+        <button class="modal-close" onclick="closeKofiModal()" style="position:absolute; right:1.5rem;">&#10005;</button>
+      </div>
+      <div style="padding:2rem 1.5rem;">
+        <div style="font-size:40px; margin-bottom:1rem;">☕</div>
+        <p style="font-family:'Cinzel',serif; font-size:13px; color:#d4aa70; letter-spacing:1px; margin-bottom:0.75rem;">ENJOY THE TOOL?</p>
+        <p style="font-size:15px; color:#9a8a75; line-height:1.6; margin-bottom:1.5rem;">If this helped you plan your build, consider supporting the project with a coffee. It keeps the server running and new features coming!</p>
+        <a href="https://ko-fi.com/doeTom" target="_blank"
+           style="display:inline-block; font-family:'Cinzel',serif; font-size:12px; letter-spacing:2px; color:#0d0a07; background:#d4aa70; border:none; padding:0.75rem 2rem; cursor:pointer; text-decoration:none; margin-bottom:1rem;">
+          ☕ BUY ME A COFFEE
+        </a>
+        <br>
+        <button onclick="closeKofiModal()" style="background:none; border:none; font-family:'Cinzel',serif; font-size:10px; letter-spacing:1px; color:#5a4a35; cursor:pointer; padding:0.5rem;">
+          MAYBE LATER
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal" style="display:none">
+  <div class="modal-overlay" onclick="closeModalOverlay(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title">SELECT ITEM</div>
+        <button class="modal-close" onclick="closeModal()">&#10005;</button>
+      </div>
+      <div class="modal-search">
+        <input type="text" class="search-input" id="search-input" placeholder="Search items..." oninput="filterItems()">
+      </div>
+      <div class="categories-bar" id="categories-bar"></div>
+      <div class="items-list" id="items-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var SLOTS = [
+  { key: 'weapon',  label: 'Weapon',  section: 'armas'   },
+  { key: 'offhand', label: 'Offhand', section: 'offhand' },
+  { key: 'head',    label: 'Head',    section: 'head'    },
+  { key: 'armor',   label: 'Armor',   section: 'armor'   },
+  { key: 'shoes',   label: 'Shoes',   section: 'shoes'   },
+  { key: 'food',    label: 'Food',    section: 'comidas' },
+];
+
+var MAX_SWAPS = 4;
+var itemsData = null;
+var selectedMembers = 2;
+var isSolo = false;
+var buildSlots = {};
+var currentSlot = null;
+var activeCategory = null;
+var currentItems = [];
+var isSwapModal = false;
+
+fetch('items.json').then(function(r){ return r.json(); }).then(function(d){ itemsData = d; }).catch(function(){ itemsData = null; });
+
+function show(id) { document.getElementById(id).style.display = 'block'; }
+function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+function goHome() { show('screen-home'); hide('screen-members'); hide('screen-build'); }
+function goBack() { hide('screen-build'); if (isSolo) goHome(); else show('screen-members'); }
+function goGroup() { isSolo = false; renderMembersGrid(); hide('screen-home'); show('screen-members'); }
+function goSolo()  { isSolo = true; selectedMembers = 1; buildSlots = {}; startBuild(); }
+
+function renderMembersGrid() {
+  var g = document.getElementById('members-grid');
+  g.innerHTML = '';
+  for (var i = 2; i <= 10; i++) {
+    (function(n) {
+      var b = document.createElement('button');
+      b.className = 'member-btn' + (n === selectedMembers ? ' active' : '');
+      b.textContent = n;
+      b.onclick = function() {
+        selectedMembers = n;
+        document.querySelectorAll('.member-btn').forEach(function(x){ x.classList.remove('active'); });
+        b.classList.add('active');
+      };
+      g.appendChild(b);
+    })(i);
+  }
+}
+
+function startGroupBuild() { buildSlots = {}; startBuild(); }
+
+function startBuild() {
+  hide('screen-home'); hide('screen-members'); show('screen-build');
+  document.getElementById('build-label').textContent = isSolo ? 'SOLO BUILD' : 'GROUP BUILD';
+  document.getElementById('build-sub').textContent = isSolo ? '' : selectedMembers + ' members';
+  renderBuild();
+}
+
+function getSwapCount(m) {
+  var count = 0;
+  for (var i = 0; i < MAX_SWAPS; i++) {
+    if (buildSlots[m + '_swap' + i]) count = i + 1;
+  }
+  return count;
+}
+
+function renderBuild() {
+  var container = document.getElementById('build-container');
+  var members = isSolo ? 1 : selectedMembers;
+  var slotW = 120;
+  var rowLabelW = 110;
+  var gap = 2;
+  var divW = 28;
+
+  var html = '<div style="display:flex; align-items:flex-end; gap:' + gap + 'px; margin-bottom:4px;">';
+  html += '<div style="width:' + rowLabelW + 'px; flex-shrink:0;"></div>';
+  for (var s = 0; s < SLOTS.length; s++) {
+    html += '<div class="col-label" style="width:' + slotW + 'px; flex-shrink:0;">' + SLOTS[s].label + '</div>';
+  }
+  html += '<div style="width:' + divW + 'px; flex-shrink:0;"></div>';
+  for (var sw = 0; sw < MAX_SWAPS; sw++) {
+    html += '<div class="col-label swap" style="width:' + slotW + 'px; flex-shrink:0;">Swap ' + (sw+1) + '</div>';
+  }
+  html += '</div>';
+
+  for (var m = 0; m < members; m++) {
+    var swapCount = getSwapCount(m);
+    html += '<div style="display:flex; align-items:center; gap:' + gap + 'px; margin-bottom:' + gap + 'px;">';
+    html += '<div class="row-label" style="width:' + rowLabelW + 'px; flex-shrink:0;">' + (isSolo ? 'YOUR BUILD' : 'Member ' + (m+1)) + '</div>';
+
+    for (var s = 0; s < SLOTS.length; s++) {
+      var slot = SLOTS[s];
+      var key = m + '_' + slot.key;
+      var item = buildSlots[key];
+      if (item) {
+        html += '<div class="slot filled" onclick="openSlotModal(' + m + ',\'' + slot.key + '\',\'' + slot.section + '\',\'' + slot.label + '\')">'
+          + '<img src="https://render.albiononline.com/v1/item/' + item.uniqueName + '@0.png" onerror="this.style.display=\'none\'">'
+          + '</div>';
+      } else {
+        html += '<div class="slot" onclick="openSlotModal(' + m + ',\'' + slot.key + '\',\'' + slot.section + '\',\'' + slot.label + '\')">'
+          + '<span class="slot-name">' + slot.label.toUpperCase() + '</span>'
+          + '</div>';
+      }
+    }
+
+    html += '<div style="width:' + divW + 'px; flex-shrink:0; display:flex; align-items:center; justify-content:center; height:' + slotW + 'px;">'
+      + '<div style="width:1px; height:70%; background:#2a2015;"></div></div>';
+
+    for (var i = 0; i < MAX_SWAPS; i++) {
+      var skey = m + '_swap' + i;
+      var sitem = buildSlots[skey];
+      if (sitem) {
+        html += '<div class="slot filled" onclick="openSwapModal(' + m + ',' + i + ')">'
+          + '<img src="https://render.albiononline.com/v1/item/' + sitem.uniqueName + '@0.png" onerror="this.style.display=\'none\'">'
+          + '</div>';
+      } else if (i > swapCount) {
+        html += '<div class="slot swap-locked"></div>';
+      } else {
+        html += '<div class="slot swap-add" onclick="openSwapModal(' + m + ',' + i + ')">'
+          + '<span style="font-size:28px; color:#3a2e1e;">+</span>'
+          + '<span class="slot-name">SWAP</span>'
+          + '</div>';
+      }
+    }
+    html += '</div>';
+  }
+
+  container.innerHTML = html;
+}
+
+// ── SCREENSHOT ────────────────────────────────────────────────
+function takeScreenshot() {
+  var target = document.getElementById('build-capture');
+  var flash = document.getElementById('screenshot-flash');
+
+  var watermark = document.createElement('div');
+  watermark.style.cssText = 'padding: 12px 0 4px; text-align: left; font-family: Cinzel, serif; font-size: 13px; letter-spacing: 2px; color: #7a6a55;';
+  watermark.textContent = 'powered by albionbuildcreator.netlify.app';
+  target.appendChild(watermark);
+
+  flash.style.opacity = '0.6';
+  setTimeout(function(){ flash.style.opacity = '0'; }, 150);
+
+  html2canvas(target, {
+    backgroundColor: '#0d0a07',
+    scale: 2,
+    useCORS: true,
+    allowTaint: true,
+    logging: false
+  }).then(function(canvas) {
+    target.removeChild(watermark);
+    var link = document.createElement('a');
+    link.download = 'albion-build.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    setTimeout(function(){ document.getElementById('kofi-modal').style.display = 'block'; }, 800);
+  }).catch(function(err) {
+    target.removeChild(watermark);
+    alert('Screenshot failed: ' + err.message);
+  });
+}
+
+// ── MODALS ────────────────────────────────────────────────────
+function openSlotModal(memberIdx, slotKey, section, label) {
+  isSwapModal = false;
+  currentSlot = { memberIdx: memberIdx, slotKey: slotKey, section: section };
+  document.getElementById('modal-title').textContent = label.toUpperCase();
+  document.getElementById('search-input').value = '';
+  document.getElementById('modal').style.display = 'block';
+  activeCategory = null;
+  loadModalItems(section);
+}
+
+function openSwapModal(memberIdx, swapIdx) {
+  isSwapModal = true;
+  currentSlot = { memberIdx: memberIdx, slotKey: 'swap' + swapIdx, section: null };
+  document.getElementById('modal-title').textContent = 'SWAP ' + (swapIdx + 1);
+  document.getElementById('search-input').value = '';
+  document.getElementById('modal').style.display = 'block';
+  activeCategory = null;
+  loadAllItems();
+}
+
+function loadAllItems() {
+  var list = document.getElementById('items-list');
+  var catsBar = document.getElementById('categories-bar');
+  if (!itemsData) { list.innerHTML = '<div class="empty-state">items.json not found.</div>'; catsBar.innerHTML = ''; currentItems = []; return; }
+  var allItems = [];
+  Object.values(itemsData).forEach(function(section) {
+    Object.values(section).forEach(function(catItems) { allItems = allItems.concat(catItems); });
+  });
+  catsBar.innerHTML = '';
+  currentItems = allItems;
+  renderItemsList(currentItems);
+}
+
+function loadModalItems(section) {
+  var list = document.getElementById('items-list');
+  var catsBar = document.getElementById('categories-bar');
+  if (!itemsData) { list.innerHTML = '<div class="empty-state">items.json not found.</div>'; catsBar.innerHTML = ''; currentItems = []; return; }
+  var sectionData = itemsData[section];
+  if (!sectionData) { list.innerHTML = '<div class="empty-state">No data for "' + section + '"</div>'; catsBar.innerHTML = ''; currentItems = []; return; }
+  var categories = Object.keys(sectionData);
+  catsBar.innerHTML = categories.map(function(cat) {
+    return '<button class="cat-pill' + (activeCategory === cat ? ' active' : '') + '" onclick="selectCategory(\'' + cat + '\')">' + cat + '</button>';
+  }).join('');
+  currentItems = activeCategory && sectionData[activeCategory]
+    ? sectionData[activeCategory]
+    : categories.reduce(function(acc, c) { return acc.concat(sectionData[c] || []); }, []);
+  renderItemsList(currentItems);
+}
+
+function selectCategory(cat) {
+  activeCategory = cat === activeCategory ? null : cat;
+  if (isSwapModal) loadAllItems(); else loadModalItems(currentSlot.section);
+}
+
+function filterItems() {
+  var q = document.getElementById('search-input').value.toLowerCase();
+  renderItemsList(currentItems.filter(function(i) { return i.name.toLowerCase().includes(q) || i.uniqueName.toLowerCase().includes(q); }));
+}
+
+function renderItemsList(items) {
+  var list = document.getElementById('items-list');
+  if (!items.length) { list.innerHTML = '<div class="empty-state">No items found</div>'; return; }
+  currentItems = items;
+  list.innerHTML = items.map(function(item, i) {
+    return '<div class="item-row" onclick="selectItemByIndex(' + i + ')">'
+      + '<img class="item-thumb" src="https://render.albiononline.com/v1/item/' + item.uniqueName + '@0.png" onerror="this.style.opacity=\'0.15\'">'
+      + '<div class="item-info"><div class="item-name">' + item.name + '</div><div class="item-unique">' + item.uniqueName + '</div></div>'
+      + '</div>';
+  }).join('');
+}
+
+function selectItemByIndex(i) { selectItem(currentItems[i]); }
+
+function selectItem(item) {
+  buildSlots[currentSlot.memberIdx + '_' + currentSlot.slotKey] = item;
+  closeModal();
+  renderBuild();
+}
+
+function closeModal() { document.getElementById('modal').style.display = 'none'; }
+function closeModalOverlay(e) { if (e.target === e.currentTarget) closeModal(); }
+function closeKofiModal() { document.getElementById('kofi-modal').style.display = 'none'; }
+</script>
+</body>
+</html>
